@@ -1,0 +1,8 @@
+<launch>
+    <rosparam file="$(find map_cleaner)/config/config_kitti.yaml" command="load" />
+    <rosparam file="$(find map_cleaner)/thirdparty/travel/config/kitti_params.yaml" command="load" />
+    <node name="map_cleaner" pkg="map_cleaner" type="map_cleaner" output="screen" />
+
+    <!-- Run Rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find map_cleaner)/rviz/rviz.rviz" />
+</launch>
