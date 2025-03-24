@@ -115,18 +115,6 @@ roslaunch map_cleaner run_kitti.launch
     year={2021},
     }
 ```
-```
-@article{lim2021erasor,
-    title={ERASOR: Egocentric Ratio of Pseudo Occupancy-Based Dynamic Object Removal for Static 3D Point Cloud Map Building},
-    author={Lim, Hyungtae and Hwang, Sungwon and Myung, Hyun},
-    journal={IEEE Robotics and Automation Letters},
-    volume={6},
-    number={2},
-    pages={2272--2279},
-    year={2021},
-    publisher={IEEE}
-    }
-```
 
 - [Nanoflann](https://github.com/jlblancoc/nanoflann)
 ```
