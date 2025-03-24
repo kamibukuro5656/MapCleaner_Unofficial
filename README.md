@@ -14,6 +14,14 @@
 |----|----|
 |<img src="imgs/bongeunsa_dataset_result.png" width="640">|<img src="imgs/bongeunsa_dataset_terrain.png" width="640">|
 
+### Update (2025/03/24)
+##### Algorithm and License Change
+- The algorithm used for GroundSegmentation has been changed from [TRAVEL](https://github.com/url-kaist/TRAVEL) to [PatchWork++](https://github.com/url-kaist/patchwork-plusplus).
+- Because this change made it no longer necessary to apply the GPL license, the license of this repository has been changed to BSD.
+
+##### Docker
+- This repository uses ROS1 for visualization, but since ROS1 has become obsolete and it is difficult to prepare an environment, we have prepared a Docker environment.
+- Please refer to the [README](./docker/README.md) in the docker directory for how to use the Docker environment.
 
 ### Env
 - Ubuntu 20.04 LTS
