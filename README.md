@@ -59,7 +59,6 @@ roslaunch map_cleaner run_kitti.launch
 4. `ground.pcd, static.pcd, dynamic.pcd, ground_below, other.pcd, terrain.pcd` are output to the directory specified by `save_dir`.
 
 *1: `other.pcd` contains the unprocessed point clouds that are not on the terrain model. If `divide_by_terrain/on_terrain_only` is `false`, all point clouds are processed. Therefore, `other.pcd` will not be output.  
-*2: TRAVEL parameters are located in `thirdparty/travel/config`.
 
 ### Dataset
 - I recommend using [SemanticKITTI's Pose data](http://www.semantic-kitti.org/index.html) because the Pose data of KITTI Odometry is not accurate.
@@ -67,7 +66,7 @@ roslaunch map_cleaner run_kitti.launch
 - My other repository [SimpleLoopClosure](https://github.com/kamibukuro5656/SimpleLoopClosure) supports output in ERASOR format.
 
 ### Difference from paper
-- In the paper, [Patchwork](https://github.com/LimHyungTae/patchwork) is used for the initial estimation of ground point clouds, but in this repository, [TRAVEL](https://github.com/url-kaist/TRAVEL) is used.
+- In the paper, [Patchwork](https://github.com/LimHyungTae/patchwork) is used for the initial estimation of ground point clouds, but in this repository, [PatchWork++](https://github.com/url-kaist/patchwork-plusplus) is used.
 - A 3x3 Median Filter has been added after the second BGK Filter.
 - The judgment condition of "Fused Result" is partially different from the pseudocode in the paper.
 
@@ -87,17 +86,15 @@ roslaunch map_cleaner run_kitti.launch
     }
 ```
 
-- [TRAVEL](https://github.com/url-kaist/TRAVEL)
+- [PatchWork++](https://github.com/url-kaist/patchwork-plusplus)
 ```
-@ARTICLE{oh2022travel,  
-    author={Oh, Minho and Jung, Euigon and Lim, Hyungtae and Song, Wonho and Hu, Sumin and Lee, Eungchang Mason and Park, Junghee and Kim, Jaekyung and Lee, Jangwoo and Myung, Hyun},  
-    journal={IEEE Robotics and Automation Letters},   
-    title={TRAVEL: Traversable Ground and Above-Ground Object Segmentation Using Graph Representation of 3D LiDAR Scans},   
-    volume={7},  
-    number={3},  
-    pages={7255-7262},  
+@inproceedings{lee2022patchworkpp,
+    title={{Patchwork++: Fast and robust ground segmentation solving partial under-segmentation using 3D point cloud}},
+    author={Lee, Seungjae and Lim, Hyungtae and Myung, Hyun},
+    booktitle={Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst.},
     year={2022},
-    }
+    pages={13276-13283}
+}
 ```
 ```
 @article{lim2021patchwork,

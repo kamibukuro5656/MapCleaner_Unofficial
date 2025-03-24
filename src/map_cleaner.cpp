@@ -195,24 +195,45 @@ class MapCleaner
     if(loader_->getSize() == 0)
       exit(1);
     
-    //Travel
-    bool use_object_seg, use_voxel_grid;
+    //PatchWorkpp
+    bool use_voxel_grid;
     float seg_voxel_leaf_size;
-    nh_.param<bool>("/ground_segmentation/use_object_seg", use_object_seg, true);
     nh_.param<bool>("/ground_segmentation/use_voxel_grid", use_voxel_grid, false);
     nh_.param<float>("/ground_segmentation/voxel_leaf_size", seg_voxel_leaf_size, 0.1);
-    TravelGroundSegPtr ground_seg;
-    ObjectClusterPtr object_seg;
-    buildTravel(nh_, ground_seg, object_seg);
-    if(!use_object_seg)
-      object_seg = nullptr;
 
+    patchwork::Params patchwork_params;
+    nh_.param<bool>("/patchworkpp/verbose", patchwork_params.verbose, false);
+    nh_.param<bool>("/patchworkpp/enable_rnr", patchwork_params.enable_RNR, true);
+    nh_.param<bool>("/patchworkpp/enable_rvpf", patchwork_params.enable_RVPF, true);
+    nh_.param<bool>("/patchworkpp/enable_tgr", patchwork_params.enable_TGR, true);
+    nh_.param<int>("/patchworkpp/num_iter", patchwork_params.num_iter, 3);
+    nh_.param<int>("/patchworkpp/num_lpr", patchwork_params.num_lpr, 20);
+    nh_.param<int>("/patchworkpp/num_min_pts", patchwork_params.num_min_pts, 10);
+    nh_.param<int>("/patchworkpp/num_zones", patchwork_params.num_zones, 4);
+    nh_.param<int>("/patchworkpp/num_rings_of_interest", patchwork_params.num_rings_of_interest, 4);
+    nh_.param<double>("/patchworkpp/rnr_ver_angle_thr", patchwork_params.RNR_ver_angle_thr, -15.0);
+    nh_.param<double>("/patchworkpp/rnr_intensity_thr", patchwork_params.RNR_intensity_thr, 0.2);
+    nh_.param<double>("/patchworkpp/sensor_height", patchwork_params.sensor_height, 1.723);
+    nh_.param<double>("/patchworkpp/th_seeds", patchwork_params.th_seeds, 0.125);
+    nh_.param<double>("/patchworkpp/th_dist", patchwork_params.th_dist, 0.125);
+    nh_.param<double>("/patchworkpp/th_seeds_v", patchwork_params.th_seeds_v, 0.25);
+    nh_.param<double>("/patchworkpp/th_dist_v", patchwork_params.th_dist_v, 0.1);
+    nh_.param<double>("/patchworkpp/max_range", patchwork_params.max_range, 80.0);
+    nh_.param<double>("/patchworkpp/min_range", patchwork_params.min_range, 2.7);
+    nh_.param<double>("/patchworkpp/uprightness_thr", patchwork_params.uprightness_thr, 0.707);
+    nh_.param<double>("/patchworkpp/adaptive_seed_selection_margin", patchwork_params.adaptive_seed_selection_margin, -1.2);
+    nh_.param<std::vector<int>>("/patchworkpp/num_sectors_each_zone", patchwork_params.num_sectors_each_zone, {16, 32, 54, 32});
+    nh_.param<std::vector<int>>("/patchworkpp/num_rings_each_zone", patchwork_params.num_rings_each_zone, {2, 4, 4, 4});
+    nh_.param<int>("/patchworkpp/max_flatness_storage", patchwork_params.max_flatness_storage, 1000);
+    nh_.param<int>("/patchworkpp/max_elevation_storage", patchwork_params.max_elevation_storage, 1000);
+    nh_.param<std::vector<double>>("/patchworkpp/elevation_thr", patchwork_params.elevation_thr, {0.0, 0.0, 0.0, 0.0});
+    nh_.param<std::vector<double>>("/patchworkpp/flatness_thr", patchwork_params.flatness_thr, {0.0, 0.0, 0.0, 0.0});
     if(in_process_vis)
-      ground_seg_.reset(new GroundSegmentation(ground_seg, object_seg, 
+      ground_seg_.reset(new GroundSegmentation(patchwork_params, 
                                                use_voxel_grid, seg_voxel_leaf_size, 
                                                pub_ptr_in_proc_vis_, frame_id_));
     else
-      ground_seg_.reset(new GroundSegmentation(ground_seg, object_seg, 
+      ground_seg_.reset(new GroundSegmentation(patchwork_params, 
                                                use_voxel_grid, seg_voxel_leaf_size));
 
     //GridMapBuilder

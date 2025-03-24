@@ -1,7 +1,7 @@
 loader:
-  pcds_dir: "/home/main/Documents/kitti_odometry/dataset_odometry_velodyne/dataset/sequences/01/velodyne"
-  pose_file: "/home/main/Documents/kitti_odometry/data_odometry_labels/dataset/sequences/01/poses.txt"
-  kitti_calibration_file: "/home/main/Documents/kitti_odometry/data_odometry_calib/dataset/sequences/01/calib.txt"
+  pcds_dir: "/home/main/Documents/kitti_odometry/dataset_odometry_velodyne/dataset/sequences/07/velodyne"
+  pose_file: "/home/main/Documents/kitti_odometry/data_odometry_labels/dataset/sequences/07/poses.txt"
+  kitti_calibration_file: "/home/main/Documents/kitti_odometry/data_odometry_calib/dataset/sequences/07/calib.txt"
   start: 0
   end: -1
   format: "kitti" #"erasor"
@@ -13,9 +13,36 @@ map_cleaner:
   visualization_vg_res: 0.4
 
 ground_segmentation:
-  use_object_seg: false
   use_voxel_grid: true
   voxel_leaf_size: 0.1
+
+patchworkpp:
+  verbose: false
+  enable_rnr: true
+  enable_rvpf: true
+  enable_tgr: true
+  num_iter: 3
+  num_lpr: 20
+  num_min_pts: 10
+  num_zones: 4
+  num_rings_of_interest: 4
+  rnr_ver_angle_thr: -15.0
+  rnr_intensity_thr: 0.2
+  sensor_height: 1.723
+  th_seeds: 0.125
+  th_dist: 0.125
+  th_seeds_v: 0.25
+  th_dist_v: 0.1
+  max_range: 80.0
+  min_range: 2.7
+  uprightness_thr: 0.707
+  adaptive_seed_selection_margin: -1.2
+  num_sectors_each_zone: [16, 32, 54, 32]
+  num_rings_each_zone: [2, 4, 4, 4]
+  max_flatness_storage: 1000
+  max_elevation_storage: 1000
+  elevation_thr: [0.0, 0.0, 0.0, 0.0]
+  flatness_thr: [0.0, 0.0, 0.0, 0.0]
 
 grid_map_builder:
   grid_res: 0.2

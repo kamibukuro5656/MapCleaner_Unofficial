@@ -3,79 +3,12 @@
 #include <ros/ros.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <map_cleaner/DataLoader.hpp>
-#include "travel/tgs.hpp"
-#include "travel/aos.hpp"
 #include <voxel_grid_large.h>
+#include <patchwork/patchworkpp.h>
+#include <pcl/filters/extract_indices.h>
 
-typedef std::shared_ptr<travel::TravelGroundSeg<PointType>> TravelGroundSegPtr;
-typedef std::shared_ptr<const travel::TravelGroundSeg<PointType>> TravelGroundSegConstPtr;
-typedef std::shared_ptr<travel::ObjectCluster<PointType>> ObjectClusterPtr;
-typedef std::shared_ptr<const travel::ObjectCluster<PointType>> ObjectClusterConstPtr;
-
-void buildTravel(const ros::NodeHandle &nh, TravelGroundSegPtr &ground_seg, ObjectClusterPtr &object_seg)
-{
-  //
-  // Created by Minho Oh & Euigon Jung on 1/31/22.
-  // We really appreciate Hyungtae Lim and Prof. Hyun Myung! :)
-  //
-  float min_range, max_range;
-  int vert_scan, horz_scan;
-  float min_vert_angle, max_vert_angle;
-  nh.param<float>("/lidar/min_range", min_range, 0.0);
-  nh.param<float>("/lidar/max_range", max_range, 30.0);
-  nh.param<int>   ("/lidar/vert_scan"     , vert_scan, 64);
-  nh.param<int>   ("/lidar/horz_scan"     , horz_scan, 1800);
-  nh.param<float> ("/lidar/min_vert_angle", min_vert_angle, -30.0);
-  nh.param<float> ("/lidar/max_vert_angle", max_vert_angle, 50.0);
-
-  float tgf_res, th_seeds, th_dist, th_outlier, th_normal, th_weight, th_lcc_normal_similarity, th_lcc_planar_dist, th_obstacle;
-  int num_iter, num_lpr, num_min_pts;
-  bool refine_mode, viz_mode;
-  nh.param<float>("/tgs/resolution", tgf_res, 5.0);
-  nh.param<int>("/tgs/num_iter", num_iter, 3);
-  nh.param<int>("/tgs/num_lpr", num_lpr, 20);
-  nh.param<int>("/tgs/num_min_pts", num_min_pts, 10);
-  nh.param<float>("/tgs/th_seeds", th_seeds, 0.4);
-  nh.param<float>("/tgs/th_dist", th_dist, 0.3);
-  nh.param<float>("/tgs/th_outlier", th_outlier, 0.3);
-  nh.param<float>("/tgs/th_normal", th_normal, 0.707);
-  nh.param<float>("/tgs/th_weight", th_weight, 1.5);
-  nh.param<float>("/tgs/th_obstacle", th_obstacle, 1.5);
-  nh.param<float>("/tgs/th_lcc_normal", th_lcc_normal_similarity, 1.5);
-  nh.param<float>("/tgs/th_lcc_planar", th_lcc_planar_dist, 1.5);
-  nh.param<bool>("/tgs/refine_mode", refine_mode, true);
-  nh.param<bool>("/tgs/visualization", viz_mode, true);
-
-  float car_width, car_length, lidar_width_offset, lidar_length_offset, horz_merge_thres, vert_merge_thres;
-  int downsample, vert_scan_size, horz_scan_size, horz_skip_size, horz_extension_size, min_cluster_size, max_cluster_size;
-  nh.param<int>  ("/aos/downsample"           , downsample, 2);
-  nh.param<float>("/aos/car_width"            , car_width, 1.0);
-  nh.param<float>("/aos/car_length"           , car_length, 1.0);
-  nh.param<float>("/aos/lidar_width_offset"   , lidar_width_offset, 0.0);
-  nh.param<float>("/aos/lidar_length_offset"  , lidar_length_offset, 0.0);
-  nh.param<float>("/aos/th_horz_merg"         , horz_merge_thres, 0.3);
-  nh.param<float>("/aos/th_vert_merg"         , vert_merge_thres, 1.0);
-  nh.param<int>  ("/aos/vert_scan_size"       , vert_scan_size, 4);
-  nh.param<int>  ("/aos/horz_scan_size"       , horz_scan_size, 4);
-  nh.param<int>  ("/aos/horz_skip_size"       , horz_skip_size, 4);
-  nh.param<int>  ("/aos/horz_extension_size"  , horz_extension_size, 3);
-  nh.param<int>  ("/aos/min_cluster_size"     , min_cluster_size, 4);
-  nh.param<int>  ("/aos/max_cluster_size"     , max_cluster_size, 100);
-
-  ground_seg.reset(new travel::TravelGroundSeg<PointType>());
-  ground_seg->setParams(max_range, min_range, tgf_res,
-                    num_iter, num_lpr, num_min_pts, th_seeds,
-                    th_dist, th_outlier, th_normal, th_weight,
-                    th_lcc_normal_similarity, th_lcc_planar_dist, th_obstacle,
-                    refine_mode, viz_mode);
-
-  object_seg.reset(new travel::ObjectCluster<PointType>());
-  object_seg->setParams(vert_scan, horz_scan, min_range, max_range, 
-                    min_vert_angle, max_vert_angle,
-                    horz_merge_thres, vert_merge_thres, vert_scan_size,
-                    horz_scan_size, horz_extension_size, horz_skip_size, downsample, 
-                    min_cluster_size, max_cluster_size);
-}
+typedef std::shared_ptr<patchwork::PatchWorkpp> PatchWorkppPtr;
+typedef std::shared_ptr<const patchwork::PatchWorkpp> PatchWorkppConstPtr;
 
 class GroundSegmentation
 {
@@ -84,52 +17,44 @@ public:
   typedef std::shared_ptr<const GroundSegmentation> ConstPtr;
 
 private:
-  TravelGroundSegPtr ground_seg_;
-  ObjectClusterPtr object_seg_;
+  PatchWorkppPtr ground_seg_;
   PublisherPtr pub_ptr_;
   tf2_ros::StaticTransformBroadcaster static_tf_br_;
   pcl::VoxelGridLarge<PointType> vg_;
   bool use_voxel_grid_;
   std::string frame_id_;
-  double min_range_, max_range_;
   
-  void computeTravel(const CloudType &input_cloud, CloudType::Ptr &ground_cloud, CloudType::Ptr &nonground_cloud)
+  void computePatchWorkpp(const CloudType::Ptr &input_cloud, CloudType::Ptr &ground_cloud, CloudType::Ptr &nonground_cloud)
   {
-    //
-    // Created by Minho Oh & Euigon Jung on 1/31/22.
-    // We really appreciate Hyungtae Lim and Prof. Hyun Myung! :)
-    //
-    CloudType::Ptr filtered_cloud(new CloudType);
+    Eigen::MatrixXf input_matrix;
+    input_matrix.resize(input_cloud->size(), 4);
+    for(int i = 0; i < input_cloud->size(); ++i)
+      input_matrix.row(i) << (*input_cloud)[i].x, (*input_cloud)[i].y, (*input_cloud)[i].z, (*input_cloud)[i].intensity;
 
-    filtered_cloud->header = input_cloud.header;
-    filtered_cloud->reserve(input_cloud.size());
-    for (auto &point : input_cloud)
-    {
-      bool is_nan = std::isnan(point.x) || std::isnan(point.y) || std::isnan(point.z);
-      double pt_range = 0.0;
-      if (is_nan)
-      {
-        continue;
-      }
-      pt_range = sqrt(pow(point.x, 2) + pow(point.y, 2) + pow(point.z, 2));
-      if (pt_range <= min_range_ || pt_range >= max_range_)
-      {
-        continue;
-      }
-      filtered_cloud->push_back(point);
-    }
+    ground_seg_->estimateGround(input_matrix);
+    Eigen::VectorXi ground_idx = ground_seg_->getGroundIndices();
+    Eigen::VectorXi nonground_idx = ground_seg_->getNongroundIndices();
 
-    CloudType::Ptr out_nonground_seg;
-    if(object_seg_ != nullptr)
-      out_nonground_seg.reset(new CloudType);
-    else
-      out_nonground_seg = nonground_cloud;
-
-    double ground_seg_time;
-    ground_seg_->estimateGround(*filtered_cloud, *ground_cloud, *out_nonground_seg, ground_seg_time);
-
-    if(object_seg_ != nullptr)
-      object_seg_->segmentObjects(out_nonground_seg, nonground_cloud);
+    pcl::ExtractIndices<PointType> extract;
+    pcl::PointIndices::Ptr pcl_ground_indices(new pcl::PointIndices());
+    pcl_ground_indices->indices.resize(ground_idx.size());
+    for(int i = 0; i < ground_idx.size(); ++i)
+      pcl_ground_indices->indices[i] = ground_idx[i];
+    
+    extract.setInputCloud(input_cloud);
+    extract.setIndices(pcl_ground_indices);
+    extract.setNegative(false);
+    extract.filter(*ground_cloud);
+    
+    pcl::PointIndices::Ptr pcl_nonground_indices(new pcl::PointIndices());
+    pcl_nonground_indices->indices.resize(nonground_idx.size());
+    for(int i = 0; i < nonground_idx.size(); ++i)
+      pcl_nonground_indices->indices[i] = nonground_idx[i];
+    
+    extract.setInputCloud(input_cloud);
+    extract.setIndices(pcl_nonground_indices);
+    extract.setNegative(false);
+    extract.filter(*nonground_cloud);
   }
 
   void publish(const DataLoaderBase::Frame &frame, const CloudType &ground_frame, const CloudType &nonground_frame)
@@ -177,26 +102,15 @@ private:
   }
 
 public:
-  GroundSegmentation(const TravelGroundSegPtr ground_seg, const ObjectClusterPtr object_seg = nullptr, 
+  GroundSegmentation(const patchwork::Params &params, 
                      const bool use_voxel_grid = false, const float voxel_leaf_size = 0.1, 
                      const PublisherPtr pub_ptr = nullptr, const std::string &frame_id = "map")
   {
-    ground_seg_ = ground_seg;
-    object_seg_ = object_seg;
+    ground_seg_ = PatchWorkppPtr(new patchwork::PatchWorkpp(params));
     pub_ptr_ = pub_ptr;
     frame_id_ = frame_id;
     use_voxel_grid_ = use_voxel_grid;
     vg_.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-
-    double tgf_res, th_seeds, th_dist, th_outlier, th_normal, th_weight, th_lcc_normal_similarity, th_lcc_planar_dist, th_obstacle;
-    int num_iter, num_lpr, num_min_pts;
-    bool refine_mode, viz_mode;
-
-    ground_seg_->getParams(max_range_, min_range_, tgf_res,
-                       num_iter, num_lpr, num_min_pts, th_seeds,
-                       th_dist, th_outlier, th_normal, th_weight,
-                       th_lcc_normal_similarity, th_lcc_planar_dist, th_obstacle,
-                       refine_mode, viz_mode);
   };
 
   bool compute(DataLoaderBase::Ptr &loader, CloudType &cloud, PIndices &ground_indices, PIndices &nonground_indices)
@@ -234,7 +148,7 @@ public:
       CloudType::Ptr nonground_frame(new CloudType);
       
       pcl::transformPointCloud(*frame.frame, *rotated_frame, r_mat);
-      computeTravel(*rotated_frame, ground_frame, nonground_frame);
+      computePatchWorkpp(rotated_frame, ground_frame, nonground_frame);
       pcl::transformPointCloud(*ground_frame, *ground_frame, t_mat);
       pcl::transformPointCloud(*nonground_frame, *nonground_frame, t_mat);
 
@@ -266,7 +180,7 @@ public:
       publish(frame, *ground_frame, *nonground_frame);
 
       if(i % 100 == 0){
-        ROS_INFO_STREAM("Compute TRAVEL: " << i + 1 << " / " << loader->getSize());
+        ROS_INFO_STREAM("Compute PatchWorkpp: " << i + 1 << " / " << loader->getSize());
       }
     }
     
@@ -274,7 +188,7 @@ public:
     dummy_frame.t = loader->getFrameInfo(loader->getSize() - 1).t;
     dummy_frame.r = loader->getFrameInfo(loader->getSize() - 1).r;
     publish(dummy_frame, CloudType(), CloudType()); //dummy
-    ROS_INFO_STREAM("Compute TRAVEL: " << loader->getSize() << " / " << loader->getSize());
+    ROS_INFO_STREAM("Compute PatchWorkpp: " << loader->getSize() << " / " << loader->getSize());
 
     cloud.points.shrink_to_fit();
     ground_indices.indices.shrink_to_fit();
