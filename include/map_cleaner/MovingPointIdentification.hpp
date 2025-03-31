@@ -141,12 +141,10 @@ private:
 
     if(counter[0] != 0)
       return FusedResult::CASE_A;
-    else if(counter[1] != 0)
-      return FusedResult::OTHERWISE;
     else if(counter[2] != 0)
       return FusedResult::CASE_C;
-    // else if(counter[3] != 0)
-    //   return FusedResult::CASE_C;
+    else if(counter[1] != 0)
+      return FusedResult::OTHERWISE;
     
     return FusedResult::OTHERWISE;
   }

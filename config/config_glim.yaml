@@ -1,10 +1,10 @@
 loader:
-  pcds_dir: "/home/main/Documents/kitti_odometry/dataset_odometry_velodyne/dataset/sequences/07/velodyne"
-  pose_file: "/home/main/Documents/kitti_odometry/data_odometry_labels/dataset/sequences/07/poses.txt"
-  kitti_calibration_file: "/home/main/Documents/kitti_odometry/data_odometry_calib/dataset/sequences/07/calib.txt"
+  pcds_dir: "/tmp/dump/frames"
+  pose_file: "/tmp/dump/traj_lidar.txt"
+  kitti_calibration_file: ""
   start: 0
-  end: -1
-  format: "kitti" #"erasor"
+  end: 1000
+  format: "glim" #"kitti" #"erasor"
 
 map_cleaner:
   save_dir: "/tmp"
@@ -29,13 +29,13 @@ patchworkpp:
   num_rings_of_interest: 4
   rnr_ver_angle_thr: -15.0
   rnr_intensity_thr: 0.2
-  sensor_height: 1.723
+  sensor_height: 0.0
   th_seeds: 0.125
   th_dist: 0.125
   th_seeds_v: 0.25
   th_dist_v: 0.1
   max_range: 80.0
-  min_range: 2.7
+  min_range: 0.3
   uprightness_thr: 0.707
   adaptive_seed_selection_margin: -1.2
   num_sectors_each_zone: [16, 32, 54, 32]
@@ -72,18 +72,18 @@ median:
   kernel_size: 3
 
 divide_by_terrain:
-  threshold: 0.172
-  on_terrain_only: true
+  threshold: 0.1
+  on_terrain_only: false
 
 moving_point_identification:
   voxel_leaf_size: 0.2
   fov_h_deg: 360.0
-  fov_v_deg: 30.0
-  res_h_deg: 0.16
-  res_v_deg: 0.4
-  lidar_range: 70.0
-  delta_h: 2
+  fov_v_deg: 90.0
+  res_h_deg: 0.4
+  res_v_deg: 0.9375
+  lidar_range: 50.0
+  delta_h: 1
   delta_v: 1
-  threshold: 0.5
+  threshold: 0.1
   frame_skip: 0
-  submap_update_dist: 10.0
+  submap_update_dist: 5.0

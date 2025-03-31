@@ -186,6 +186,10 @@ class MapCleaner
       std::dynamic_pointer_cast<KittiFormatLoader>(loader_)->loadKittiCalibration(calibration_file);
       loader_->loadFrameInfo(pcds_dir, pose_file, start, end);
     }
+    else if(format == "glim"){
+      loader_.reset(new GLIMFormatLoader());
+      loader_->loadFrameInfo(pcds_dir, pose_file, start, end);
+    }
     else{
       loader_.reset(new ERASORFormatLoader());
       loader_->loadFrameInfo(pcds_dir, pose_file, start, end);
@@ -198,8 +202,10 @@ class MapCleaner
     //PatchWorkpp
     bool use_voxel_grid;
     float seg_voxel_leaf_size;
+    int seg_frame_skip;
     nh_.param<bool>("/ground_segmentation/use_voxel_grid", use_voxel_grid, false);
     nh_.param<float>("/ground_segmentation/voxel_leaf_size", seg_voxel_leaf_size, 0.1);
+    nh_.param<int>("/ground_segmentation/frame_skip", seg_frame_skip, 0);
 
     patchwork::Params patchwork_params;
     nh_.param<bool>("/patchworkpp/verbose", patchwork_params.verbose, false);
@@ -230,11 +236,11 @@ class MapCleaner
     nh_.param<std::vector<double>>("/patchworkpp/flatness_thr", patchwork_params.flatness_thr, {0.0, 0.0, 0.0, 0.0});
     if(in_process_vis)
       ground_seg_.reset(new GroundSegmentation(patchwork_params, 
-                                               use_voxel_grid, seg_voxel_leaf_size, 
+                                               use_voxel_grid, seg_voxel_leaf_size, seg_frame_skip,
                                                pub_ptr_in_proc_vis_, frame_id_));
     else
       ground_seg_.reset(new GroundSegmentation(patchwork_params, 
-                                               use_voxel_grid, seg_voxel_leaf_size));
+                                               use_voxel_grid, seg_voxel_leaf_size, seg_frame_skip));
 
     //GridMapBuilder
     nh_.param<float>("/grid_map_builder/grid_res", resolution_, 0.1);

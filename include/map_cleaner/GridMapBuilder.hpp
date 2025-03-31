@@ -93,7 +93,7 @@ public:
 
     if(!std::isfinite(x_min) || !std::isfinite(x_max) ||
        !std::isfinite(y_min) || !std::isfinite(y_max))
-       return nullptr;
+      return nullptr;
 
     grid_ptr->setFrameId(frame_id_);
     grid_ptr->setGeometry(grid_map::Length(x_len, y_len), resolution_, grid_map::Position(x_len * 0.5 + x_min, y_len * 0.5 + y_min));

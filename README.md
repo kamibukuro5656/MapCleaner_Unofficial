@@ -60,9 +60,7 @@ map_cleaner:
 source devel/setup.bash
 ```
 ```
-roslaunch map_cleaner run.launch
-or
-roslaunch map_cleaner run_kitti.launch
+roslaunch map_cleaner run.launch config:=[config_file_path]
 ```
 4. `ground.pcd, static.pcd, dynamic.pcd, ground_below, other.pcd, terrain.pcd` are output to the directory specified by `save_dir`.
 

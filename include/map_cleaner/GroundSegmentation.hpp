@@ -23,6 +23,7 @@ private:
   pcl::VoxelGridLarge<PointType> vg_;
   bool use_voxel_grid_;
   std::string frame_id_;
+  int frame_skip_;
   
   void computePatchWorkpp(const CloudType::Ptr &input_cloud, CloudType::Ptr &ground_cloud, CloudType::Ptr &nonground_cloud)
   {
@@ -103,7 +104,7 @@ private:
 
 public:
   GroundSegmentation(const patchwork::Params &params, 
-                     const bool use_voxel_grid = false, const float voxel_leaf_size = 0.1, 
+                     const bool use_voxel_grid = false, const float voxel_leaf_size = 0.1, const int frame_skip = 0, 
                      const PublisherPtr pub_ptr = nullptr, const std::string &frame_id = "map")
   {
     ground_seg_ = PatchWorkppPtr(new patchwork::PatchWorkpp(params));
@@ -111,6 +112,7 @@ public:
     frame_id_ = frame_id;
     use_voxel_grid_ = use_voxel_grid;
     vg_.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+    frame_skip_ = frame_skip;
   };
 
   bool compute(DataLoaderBase::Ptr &loader, CloudType &cloud, PIndices &ground_indices, PIndices &nonground_indices)
@@ -124,7 +126,7 @@ public:
       vg_.setInputCloud(first_frame.frame);
       vg_.filter(*first_frame.frame);
     }
-    size_t reserve_size = (size_t)((double)(first_frame.frame->size() * loader->getSize()) * 1.1);
+    size_t reserve_size = (size_t)((double)(first_frame.frame->size() * loader->getSize() / (frame_skip_ + 1)) * 1.1);
     cloud.reserve(reserve_size);
     ground_indices.indices.clear();
     nonground_indices.indices.clear();
@@ -132,6 +134,9 @@ public:
     for(int i = 0; i < loader->getSize(); ++i)
     {
       DataLoaderBase::Frame frame = loader->loadFrame(i);
+
+      if(i % (frame_skip_ + 1) != 0)
+        continue;
 
       if(frame.frame->empty()){
         ROS_WARN_STREAM("Frame " << frame.idx + 1 << " is empty.");
@@ -146,12 +151,12 @@ public:
       CloudType::Ptr rotated_frame(new CloudType);
       CloudType::Ptr ground_frame(new CloudType);
       CloudType::Ptr nonground_frame(new CloudType);
-      
+
       pcl::transformPointCloud(*frame.frame, *rotated_frame, r_mat);
       computePatchWorkpp(rotated_frame, ground_frame, nonground_frame);
       pcl::transformPointCloud(*ground_frame, *ground_frame, t_mat);
       pcl::transformPointCloud(*nonground_frame, *nonground_frame, t_mat);
-
+      
       if(use_voxel_grid_)
       {
         vg_.setInputCloud(ground_frame);

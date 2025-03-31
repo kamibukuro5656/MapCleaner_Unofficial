@@ -15,6 +15,7 @@ map_cleaner:
 ground_segmentation:
   use_voxel_grid: false
   voxel_leaf_size: 0.05
+  frame_skip: 0
 
 patchworkpp:
   verbose: false
