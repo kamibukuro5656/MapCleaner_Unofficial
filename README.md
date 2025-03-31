@@ -14,6 +14,12 @@
 |----|----|
 |<img src="imgs/bongeunsa_dataset_result.png" width="640">|<img src="imgs/bongeunsa_dataset_terrain.png" width="640">|
 
+### Update (2025/03/31)
+##### Support for [GLIM](https://github.com/koide3/glim)
+- Supported the format of `traj_lidar.txt` output by GLIM.
+- By default, GLIM does not store the individual scan frames required to run the algorithm.
+- Use [this](https://github.com/kamibukuro5656/glim_save_frame_plugin) plugin to save individual scan frames.
+
 ### Update (2025/03/24)
 ##### Algorithm and License Change
 - The algorithm used for GroundSegmentation has been changed from [TRAVEL](https://github.com/url-kaist/TRAVEL) to [PatchWork++](https://github.com/url-kaist/patchwork-plusplus).
