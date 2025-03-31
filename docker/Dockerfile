@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/kamibukuro5656/MapCleaner_Unofficial.git /MapCleaner/src && \
     cd /MapCleaner/src && \
-    git checkout b6d38cbf3a25b9608ec857d5c9c3052b55c7fee4 && \
+    git checkout 426581c066f67da5c645445266f8df53101597df && \
     cd /MapCleaner && \
     . /opt/ros/noetic/setup.sh && catkin_make -DCMAKE_BUILD_TYPE=Release
 
