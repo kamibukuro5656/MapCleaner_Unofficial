@@ -26,7 +26,7 @@
 - Because this change made it no longer necessary to apply the GPL license, the license of this repository has been changed to BSD.
 
 ##### Docker
-- This repository uses ROS1 for visualization, but since ROS1 has become obsolete and it is difficult to prepare an environment, we have prepared a Docker environment.
+- This repository uses ROS1 for visualization, but since ROS1 has become obsolete and it is difficult to prepare an environment, I have prepared a Docker environment.
 - Please refer to the [README](./docker/README.md) in the docker directory for how to use the Docker environment.
 
 ### Env
